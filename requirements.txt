@@ -1,0 +1,8 @@
+numpy
+matplotlib
+scipy
+pandas
+pybaselines
+ipympl
+
+# To install the required packages, run: "pip install -r requirements.txt" in your terminal.

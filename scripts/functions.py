@@ -74,13 +74,15 @@ def shift_spectrum_to_peak(two_theta, intensity, target_peak=37.9, window=0.6, p
         plt.figure(figsize=(7, 4))
         
         # Plot the raw data points used for fitting
-        plt.scatter(x_window, y_window, s=15, color='black', label='Data (FTO Region)')
+        plt.scatter(two_theta, intensity, s=15, color='black', label='Data (FTO Region)')
         
         # Plot the smooth Pseudo-Voigt fit curve
-        x_fine = np.linspace(x_window.min(), x_window.max(), 500)
+        x_fine = np.linspace(x_window.min() - 0.4, x_window.max() + 0.4, 500)
         plt.plot(x_fine, pseudo_voigt(x_fine, *popt), 'r-', 
                  label=f'Pseudo-Voigt Fit (η={popt[3]:.2f})')
         
+        plt.xlim(target_peak - 1, target_peak + 1)
+
         # Visual lines for the shift
         plt.axvline(fitted_peak_center, color='blue', linestyle='--', label=f'Fitted: {fitted_peak_center:.3f}°')
         plt.axvline(target_peak, color='green', linestyle='-', alpha=0.6, label=f'Target: {target_peak}°')
@@ -90,6 +92,8 @@ def shift_spectrum_to_peak(two_theta, intensity, target_peak=37.9, window=0.6, p
         plt.ylabel("Intensity")
         plt.legend()
         plt.show()
+
+        print("test 2")
 
     return shifted_two_theta, shift
 
@@ -119,9 +123,9 @@ def calculate_fitted_peak_area(two_theta, intensity, target_peak, search_window=
         print(f"Fit failed for peak {target_peak}: {e}")
         return 0, 0
 
-    # 4. Define Area (4 * FWHM around the FITTED center)
-    int_min = cent_fit - (2 * fwhm_fit)
-    int_max = cent_fit + (2 * fwhm_fit)
+    # 4. Define Area (3 * FWHM around the FITTED center)
+    int_min = cent_fit - (1.5 * fwhm_fit)
+    int_max = cent_fit + (1.5 * fwhm_fit)
     
     int_mask = (two_theta >= int_min) & (two_theta <= int_max)
     area = trapezoid(intensity[int_mask], x=two_theta[int_mask])
@@ -129,13 +133,17 @@ def calculate_fitted_peak_area(two_theta, intensity, target_peak, search_window=
     # 5. Visualizing the fit quality
     if plot:
         plt.figure(figsize=(7, 4))
-        plt.scatter(x_data, y_data, s=10, color='black', label='Data')
+        plt.scatter(two_theta, intensity, s=10, color='black', label='Data')
         x_fine = np.linspace(x_data.min(), x_data.max(), 500)
         plt.plot(x_fine, pseudo_voigt(x_fine, *popt), 'r-', label=f'Pseudo-Voigt Fit (η={eta_fit:.2f})')
+        plt.xlim(target_peak - 1, target_peak + 1)
+        plt.ylim(0, np.max(intensity[int_mask]) * 1.2)
         plt.fill_between(two_theta[int_mask], intensity[int_mask], color='green', alpha=0.2, label='Integrated Area')
         plt.axvline(cent_fit, color='blue', linestyle='--', alpha=0.5)
         plt.title(f"Peak: {cent_fit:.3f}° | FWHM: {fwhm_fit:.3f}°")
         plt.legend()
         plt.show()
+
+        
 
     return area, fwhm_fit
