@@ -8,6 +8,26 @@ from scipy.optimize import curve_fit
 from scipy.integrate import trapezoid
 
 
+def load_XRD_txt(file_path):
+    """
+    Loads XRD data from a .txt file.
+    Assumes two columns: 2theta, intensity.
+    """
+    data = np.loadtxt(file_path, comments="#", delimiter=None)
+    two_theta = data[:, 0]
+    intensity = data[:, 1]
+    return two_theta, intensity
+
+
+def normalize_to_peak(two_theta, intensity, peak_center=37.9, window=0.2):
+    """
+    Normalizes intensity to the maximum value within a small window around a given 2θ peak.
+    """
+    mask = (two_theta > peak_center - window) & (two_theta < peak_center + window)
+    peak_intensity = intensity[mask].max()
+    normalized_intensity = intensity / peak_intensity
+    return normalized_intensity
+
 def moving_average(data, window_size):
     """Applies a moving average filter to the data."""
     window = np.ones(int(window_size)) / float(window_size)
